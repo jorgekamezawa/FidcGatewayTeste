@@ -1,0 +1,26 @@
+spring:
+  redis:
+    host: ${REDIS_HOST:fidc-redis-dev.cache.amazonaws.com}
+    port: 6379
+    password: ${REDIS_PASSWORD}
+    timeout: 3000ms
+    lettuce:
+      pool:
+        max-active: 15
+        max-idle: 8
+        min-idle: 3
+
+microservices:
+  base-url: https://microservices-dev.banco.com
+
+management:
+  endpoint:
+    health:
+      show-details: when-authorized
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.banco.fidc.gateway: DEBUG
+    io.lettuce.core: WARN
+

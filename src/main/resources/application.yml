@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: fidc-gateway
+  
+  cloud:
+    gateway:
+      routes:
+        - id: health-check
+          uri: http://localhost:8080
+          predicates:
+            - Path=/actuator/health
+      # Rotas para APIs serao configuradas aqui quando definidas
+      # Padrao: ${microservices.base-url}/api/service-path
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
