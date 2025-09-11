@@ -1,0 +1,126 @@
+version: '3.8'
+
+services:
+  # Redis para sessões
+  redis:
+    image: redis:7.2-alpine
+    container_name: fidc-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - fidc-network
+
+  # Redis Insight para visualização
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: fidc-redis-insight
+    ports:
+      - "5540:5540"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    volumes:
+      - redis_insight_data:/data
+    depends_on:
+      - redis
+    networks:
+      - fidc-network
+
+  # Mock servers para APIs downstream (para testes)
+  mock-simulation:
+    image: wiremock/wiremock:3.3.1
+    container_name: fidc-mock-simulation
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./mock/simulation:/home/wiremock
+    command: --global-response-templating --verbose
+    networks:
+      - fidc-network
+
+  mock-contract:
+    image: wiremock/wiremock:3.3.1
+    container_name: fidc-mock-contract
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./mock/contract:/home/wiremock
+    command: --global-response-templating --verbose
+    networks:
+      - fidc-network
+
+  mock-profile:
+    image: wiremock/wiremock:3.3.1
+    container_name: fidc-mock-profile
+    ports:
+      - "8083:8080"
+    volumes:
+      - ./mock/profile:/home/wiremock
+    command: --global-response-templating --verbose
+    networks:
+      - fidc-network
+
+  mock-query:
+    image: wiremock/wiremock:3.3.1
+    container_name: fidc-mock-query
+    ports:
+      - "8084:8080"
+    volumes:
+      - ./mock/query:/home/wiremock
+    command: --global-response-templating --verbose
+    networks:
+      - fidc-network
+
+  # Prometheus para métricas
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: fidc-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    networks:
+      - fidc-network
+
+  # Grafana para visualização
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: fidc-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - fidc-network
+
+volumes:
+  redis_data:
+    driver: local
+  redis_insight_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  fidc-network:
+    driver: bridge

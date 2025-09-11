@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: fidc-gateway
+
+  # Desabilitar Redis para testes
+  data:
+    redis:
+      enabled: false
+
+server:
+  port: 0  # Random port for tests
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+
+logging:
+  level:
+    com.banco.fidc.gateway: DEBUG

@@ -1,0 +1,27 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'fidc-gateway'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+    scrape_interval: 10s
+    
+  - job_name: 'mock-services'
+    static_configs:
+      - targets: 
+        - 'mock-simulation:8080'
+        - 'mock-contract:8080'
+        - 'mock-profile:8080'
+        - 'mock-query:8080'
+    scrape_interval: 30s

@@ -6,7 +6,9 @@
       "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway/**)",
       "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\kotlin\\com\\banco\\fidc\\gateway/**)",
       "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)"
+      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)",
+      "Bash(./gradlew:*)",
+      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\test\\kotlin\\com\\banco\\fidc\\gateway/**)"
     ],
     "deny": [],
     "ask": []
