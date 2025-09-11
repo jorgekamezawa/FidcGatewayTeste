@@ -14,12 +14,23 @@ docker-compose ps
 ### 2. Verificar serviços
 - **Redis**: `localhost:6379`
 - **Redis Insight**: `localhost:5540` (interface visual para Redis)
-- **Mock Simulation**: `localhost:8081/actuator/health`
-- **Mock Contract**: `localhost:8082/actuator/health`
-- **Mock Profile**: `localhost:8083/actuator/health`
-- **Mock Query**: `localhost:8084/actuator/health`
+- **Mock Simulation**: `localhost:8081/__admin/health`
+- **Mock Contract**: `localhost:8082/__admin/health`
+- **Mock Profile**: `localhost:8083/__admin/health`
+- **Mock Query**: `localhost:8084/__admin/health`
 - **Prometheus**: `localhost:9090`
 - **Grafana**: `localhost:3000` (admin/admin123)
+
+### ✅ Status dos serviços:
+```bash
+# Verificar todos os containers
+docker-compose ps
+
+# Testar conectividade
+curl http://localhost:9090  # Prometheus
+curl http://localhost:5540  # Redis Insight
+curl http://localhost:8081/__admin/health  # Mock Simulation
+```
 
 ### 3. Rodar o Gateway
 ```bash
