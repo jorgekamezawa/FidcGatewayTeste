@@ -2,7 +2,8 @@ package com.banco.fidc.gateway.service
 
 import com.banco.fidc.gateway.model.SessionContext
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
+import io.github.resilience4j.circuitbreaker.CircuitBreaker
+import io.github.resilience4j.reactor.circuitbreaker.operator.CircuitBreakerOperator
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
@@ -20,7 +21,8 @@ import java.time.Duration
 )
 class SessionService(
     private val redisTemplate: ReactiveStringRedisTemplate,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val redisCircuitBreaker: CircuitBreaker
 ) {
     
     private val logger = LoggerFactory.getLogger(javaClass)
@@ -29,7 +31,6 @@ class SessionService(
      * Busca sessão no Redis de forma reativa
      * Aplica circuit breaker para proteção contra falhas do Redis
      */
-    @CircuitBreaker(name = "redis-session", fallbackMethod = "getSessionFallback")
     fun getSession(partner: String, sessionId: String): Mono<SessionContext> {
         val redisKey = SessionContext.buildRedisKey(partner, sessionId)
         
@@ -39,6 +40,7 @@ class SessionService(
             .get(redisKey)
             .subscribeOn(Schedulers.boundedElastic())
             .timeout(Duration.ofSeconds(3))
+            .transformDeferred(CircuitBreakerOperator.of(redisCircuitBreaker))
             .doOnNext { logger.debug("Sessão encontrada no Redis: key={}", redisKey) }
             .doOnError { error -> logger.warn("Erro ao buscar sessão no Redis: key={}, error={}", redisKey, error.message) }
             .flatMap { jsonValue ->
@@ -52,13 +54,13 @@ class SessionService(
     /**
      * Valida se a sessão existe no Redis
      */
-    @CircuitBreaker(name = "redis-session", fallbackMethod = "existsSessionFallback")
     fun existsSession(partner: String, sessionId: String): Mono<Boolean> {
         val redisKey = SessionContext.buildRedisKey(partner, sessionId)
         
         return redisTemplate.hasKey(redisKey)
             .subscribeOn(Schedulers.boundedElastic())
             .timeout(Duration.ofSeconds(2))
+            .transformDeferred(CircuitBreakerOperator.of(redisCircuitBreaker))
             .doOnNext { exists -> 
                 logger.debug("Verificação de existência da sessão: key={}, exists={}", redisKey, exists) 
             }
@@ -81,29 +83,11 @@ class SessionService(
         }.subscribeOn(Schedulers.boundedElastic())
     }
 
-    /**
-     * Fallback para quando o Redis estiver indisponível
-     */
-    private fun getSessionFallback(partner: String, sessionId: String, ex: Exception): Mono<SessionContext> {
-        logger.error("Circuit breaker ativo para busca de sessão: partner={}, sessionId={}, error={}", 
-                     partner, sessionId, ex.message)
-        return Mono.error(RedisUnavailableException("Redis indisponível para busca de sessão", ex))
-    }
-
-    /**
-     * Fallback para verificação de existência quando Redis indisponível
-     */
-    private fun existsSessionFallback(partner: String, sessionId: String, ex: Exception): Mono<Boolean> {
-        logger.error("Circuit breaker ativo para verificação de sessão: partner={}, sessionId={}, error={}", 
-                     partner, sessionId, ex.message)
-        return Mono.error(RedisUnavailableException("Redis indisponível para verificação de sessão", ex))
-    }
 
     /**
      * Invalida sessão no Redis (logout)
      * Usado quando necessário forçar logout do usuário
      */
-    @CircuitBreaker(name = "redis-session")
     fun invalidateSession(partner: String, sessionId: String): Mono<Boolean> {
         val redisKey = SessionContext.buildRedisKey(partner, sessionId)
         
@@ -112,6 +96,7 @@ class SessionService(
         return redisTemplate.delete(redisKey)
             .subscribeOn(Schedulers.boundedElastic())
             .timeout(Duration.ofSeconds(5))
+            .transformDeferred(CircuitBreakerOperator.of(redisCircuitBreaker))
             .map { deletedCount -> deletedCount > 0 }
             .doOnNext { deleted -> 
                 logger.info("Sessão invalidada: key={}, deleted={}", redisKey, deleted) 

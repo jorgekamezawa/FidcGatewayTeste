@@ -13,7 +13,10 @@
       "Bash(docker-compose logs:*)",
       "Bash(docker-compose:*)",
       "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\kotlin\\com\\banco\\fidc\\gateway\\service/**)",
+      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\kotlin\\com\\banco\\fidc\\gateway\\exception/**)",
+      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\build\\reports\\tests\\test/**)"
     ],
     "deny": [],
     "ask": []
