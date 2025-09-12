@@ -8,7 +8,7 @@ object GatewayHeaders {
     
     // Headers de entrada (vindos do frontend)
     const val AUTHORIZATION = "Authorization"
-    const val PARTNER_HEADER = "X-Partner"
+    const val PARTNER_HEADER = "partner"
     const val CORRELATION_ID = "X-Correlation-ID"
     
     // Headers injetados pelo gateway (para downstream services)

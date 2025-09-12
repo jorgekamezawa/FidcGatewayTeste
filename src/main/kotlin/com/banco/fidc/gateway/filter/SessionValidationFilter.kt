@@ -2,6 +2,7 @@ package com.banco.fidc.gateway.filter
 
 import com.banco.fidc.gateway.model.GatewayHeaders
 import com.banco.fidc.gateway.model.Permission
+import com.banco.fidc.gateway.model.SessionContext
 import com.banco.fidc.gateway.service.JwtService
 import com.banco.fidc.gateway.service.SessionService
 import org.slf4j.LoggerFactory
@@ -66,10 +67,7 @@ class SessionValidationFilter(
         }
     }
 
-    /**
-     * Validação completa da sessão
-     */
-    private fun validateSession(exchange: ServerWebExchange, config: Config): Mono<com.banco.fidc.gateway.model.SessionContext> {
+    private fun validateSession(exchange: ServerWebExchange, config: Config): Mono<SessionContext> {
         val request = exchange.request
         
         // 1. Extrair Authorization header
