@@ -2,26 +2,18 @@ package com.banco.fidc.gateway.config
 
 import io.lettuce.core.ClientOptions
 import io.lettuce.core.SocketOptions
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
 import org.springframework.data.redis.connection.RedisClusterConfiguration
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate
 import java.time.Duration
 
 @Configuration
-@ConditionalOnProperty(
-    prefix = "spring.data.redis",
-    name = ["enabled"],
-    havingValue = "true",
-    matchIfMissing = true
-)
 class RedisConfig(
     private val redisProperties: RedisProperties
 ) {
@@ -32,7 +24,7 @@ class RedisConfig(
         val redisConfig = RedisClusterConfiguration().apply {
             clusterNode(redisProperties.host, redisProperties.port)
         }
-        
+
         redisConfig.apply {
             if (!redisProperties.password.isNullOrBlank()) {
                 setPassword(redisProperties.password)

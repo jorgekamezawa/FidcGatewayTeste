@@ -82,35 +82,23 @@ class SessionValidationFilter(
             return Mono.error(SessionValidationException("Partner header não fornecido"))
         }
         
-        // 3. Extrair sessionId e partner do JWT
-        return Mono.zip(
-            jwtService.extractSessionId(authHeader),
-            jwtService.extractPartner(authHeader)
-        ).flatMap { tuple: Tuple2<String, String> ->
-            val sessionId = tuple.t1
-            val jwtPartner = tuple.t2
-            
-            // 4. Validar se partner do header confere com partner do JWT
-            if (!jwtPartner.equals(partnerHeader, ignoreCase = true)) {
-                return@flatMap Mono.error<com.banco.fidc.gateway.model.SessionContext>(
-                    SessionValidationException("Partner do header ($partnerHeader) não confere com partner do JWT ($jwtPartner)")
-                )
-            }
-            
-            // 5. Buscar sessão no Redis
+        // 3. Extrair sessionId do JWT
+        return jwtService.extractSessionId(authHeader)
+        .flatMap { sessionId ->
+            // 4. Buscar sessão no Redis
             sessionService.getSession(partnerHeader, sessionId)
                 .flatMap { sessionContext ->
-                    // 6. Validar AccessToken com sessionSecret
+                    // 5. Validar AccessToken com sessionSecret
                     jwtService.validateToken(authHeader, sessionContext.sessionSecret)
                         .flatMap { isValid ->
                             if (!isValid) {
                                 Mono.error(SessionValidationException("AccessToken inválido"))
                             } else {
-                                // 7. Validar relacionamento selecionado
+                                // 6. Validar relacionamento selecionado
                                 if (!sessionContext.hasValidRelationship()) {
                                     Mono.error(SessionValidationException("Relacionamento não selecionado"))
                                 } else {
-                                    // 8. Validar permissões necessárias para a rota
+                                    // 7. Validar permissões necessárias para a rota
                                     validateRoutePermissions(exchange, sessionContext, config)
                                         .then(Mono.just(sessionContext))
                                 }
