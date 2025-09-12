@@ -1,5 +1,7 @@
 package com.banco.fidc.gateway.service
 
+import com.banco.fidc.gateway.exception.SessionNotFoundException
+import com.banco.fidc.gateway.exception.SessionParseException
 import com.banco.fidc.gateway.model.SessionContext
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.resilience4j.circuitbreaker.CircuitBreaker
@@ -52,5 +54,3 @@ class SessionService(
     }
 }
 
-class SessionNotFoundException(message: String) : RuntimeException(message)
-class SessionParseException(message: String, cause: Throwable) : RuntimeException(message, cause)

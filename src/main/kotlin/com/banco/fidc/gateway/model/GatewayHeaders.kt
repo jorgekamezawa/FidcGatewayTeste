@@ -24,31 +24,5 @@ object GatewayHeaders {
     const val USER_PERMISSIONS = "userPermissions"
     
     // Headers internos do gateway
-    const val GATEWAY_PROCESSED = "X-Gateway-Processed"
     const val REQUEST_START_TIME = "X-Request-Start-Time"
-    
-    /**
-     * Lista de todos os headers injetados automaticamente
-     */
-    val INJECTED_HEADERS = listOf(
-        USER_DOCUMENT_NUMBER,
-        USER_EMAIL,
-        USER_NAME,
-        FUND_ID,
-        FUND_NAME,
-        PARTNER,
-        RELATIONSHIP_ID,
-        CONTRACT_NUMBER,
-        SESSION_ID,
-        USER_PERMISSIONS
-    )
-    
-    /**
-     * Headers que devem ser removidos da resposta (segurança)
-     */
-    val HEADERS_TO_REMOVE_FROM_RESPONSE = listOf(
-        "X-Internal-User-Id",
-        "X-Internal-Session-Secret",
-        "X-Debug-Info"
-    )
 }

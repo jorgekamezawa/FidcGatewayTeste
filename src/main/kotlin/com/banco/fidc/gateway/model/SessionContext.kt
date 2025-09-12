@@ -1,104 +1,80 @@
 package com.banco.fidc.gateway.model
 
+import com.fasterxml.jackson.annotation.JsonFormat
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
 
-/**
- * Contexto completo da sessão do usuário extraído do Redis
- * Contém todas as informações necessárias para validação e enriquecimento de headers
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SessionContext(
-    @JsonProperty("sessionId")
     val sessionId: String,
-    
-    @JsonProperty("partner")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    val createdAt: String? = null,
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    val updatedAt: String? = null,
     val partner: String,
-    
-    @JsonProperty("userDocumentNumber")
-    val userDocumentNumber: String,
-    
-    @JsonProperty("userEmail")
-    val userEmail: String,
-    
-    @JsonProperty("userName")
-    val userName: String,
-    
-    @JsonProperty("fundId")
-    val fundId: String,
-    
-    @JsonProperty("fundName")
-    val fundName: String,
-    
-    @JsonProperty("relationshipId")
-    val relationshipId: String?,
-    
-    @JsonProperty("contractNumber")
-    val contractNumber: String?,
-    
-    @JsonProperty("userPermissions")
-    val userPermissions: List<String> = emptyList(),
-    
-    @JsonProperty("sessionSecret")
-    val sessionSecret: String
+    val sessionSecret: String,
+    val userInfo: UserInfo,
+    val fund: Fund,
+    val relationshipList: List<Relationship> = emptyList(),
+    val relationshipSelected: Relationship?,
+    val permissions: List<String> = emptyList()
 ) {
 
-    /**
-     * Valida se a sessão possui relacionamento selecionado (obrigatório)
-     */
-    fun hasValidRelationship(): Boolean = !relationshipId.isNullOrBlank()
+    fun hasValidRelationship(): Boolean = relationshipSelected != null
 
-    /**
-     * Verifica se o usuário possui todas as permissões necessárias
-     */
     fun hasPermissions(requiredPermissions: List<String>): Boolean {
         return requiredPermissions.all { permission ->
-            userPermissions.contains(permission)
+            permissions.contains(permission)
         }
     }
 
-    /**
-     * Verifica se o partner da sessão corresponde ao esperado
-     */
-    fun isPartnerValid(expectedPartner: String): Boolean {
-        return partner.equals(expectedPartner, ignoreCase = true)
-    }
-
-    /**
-     * Converte o contexto da sessão para headers HTTP
-     * Estes headers serão injetados automaticamente em todas as requisições downstream
-     */
     fun toHeaders(): Map<String, String> {
         return buildMap {
-            put("userDocumentNumber", userDocumentNumber)
-            put("userEmail", userEmail)
-            put("userName", userName)
-            put("fundId", fundId)
-            put("fundName", fundName)
-            put("partner", partner)
-            put("sessionId", sessionId)
+            put(GatewayHeaders.USER_DOCUMENT_NUMBER, userInfo.cpf)
+            put(GatewayHeaders.USER_EMAIL, userInfo.email)
+            put(GatewayHeaders.USER_NAME, userInfo.fullName)
+            put(GatewayHeaders.FUND_ID, fund.id)
+            put(GatewayHeaders.FUND_NAME, fund.name)
+            put(GatewayHeaders.PARTNER, partner)
+            put(GatewayHeaders.SESSION_ID, sessionId)
             
-            // Headers opcionais (podem ser null)
-            relationshipId?.let { put("relationshipId", it) }
-            contractNumber?.let { put("contractNumber", it) }
+            relationshipSelected?.let { relationship ->
+                put(GatewayHeaders.RELATIONSHIP_ID, relationship.id)
+                put(GatewayHeaders.CONTRACT_NUMBER, relationship.contractNumber)
+            }
             
-            // Permissões como string separada por vírgula
-            if (userPermissions.isNotEmpty()) {
-                put("userPermissions", userPermissions.joinToString(","))
+            if (permissions.isNotEmpty()) {
+                put(GatewayHeaders.USER_PERMISSIONS, permissions.joinToString(","))
             }
         }
     }
 
-    /**
-     * Chave Redis para busca desta sessão
-     */
-    fun getRedisKey(): String = "fidc:session:$partner:$sessionId"
-
     companion object {
-        /**
-         * Cria a chave Redis para busca de sessão
-         */
         fun buildRedisKey(partner: String, sessionId: String): String = 
             "fidc:session:$partner:$sessionId"
     }
 }
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class UserInfo(
+    val cpf: String,
+    val fullName: String,
+    val email: String,
+    val birthDate: String? = null,
+    val phoneNumber: String? = null
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Fund(
+    val id: String,
+    val name: String,
+    val type: String
+)
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class Relationship(
+    val id: String,
+    val type: String,
+    val name: String,
+    val status: String,
+    val contractNumber: String
+)

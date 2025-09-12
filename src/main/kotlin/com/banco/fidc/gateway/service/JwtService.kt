@@ -1,8 +1,10 @@
 package com.banco.fidc.gateway.service
 
+import com.banco.fidc.gateway.exception.JwtTokenException
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.JwtException
 import io.jsonwebtoken.Jwts
+import io.jsonwebtoken.security.Keys
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -10,104 +12,70 @@ import reactor.core.scheduler.Schedulers
 
 @Service
 class JwtService {
-    
+
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    /**
-     * Extrai o sessionId do AccessToken JWT
-     * O token contém claims como sessionId, partner, etc.
-     */
     fun extractSessionId(accessToken: String): Mono<String> {
         return Mono.fromCallable {
-            try {
-                // Remove prefixo "Bearer " se presente
-                val token = accessToken.removePrefix("Bearer ").trim()
-                
-                // Parse do JWT sem validação de assinatura (será validada depois com sessionSecret)
-                val jwt = Jwts.parser()
-                    .build()
-                    .parseUnsecuredClaims(token)
-                
-                val claims = jwt.payload
-                val sessionId = claims.get("sessionId", String::class.java)
-                    ?: throw JwtTokenException("SessionId não encontrado no token")
-                
-                logger.debug("SessionId extraído do token: sessionId={}", sessionId)
-                sessionId
-                
-            } catch (e: JwtException) {
-                logger.warn("Erro ao extrair sessionId do token: error={}", e.message)
-                throw JwtTokenException("Token JWT inválido: ${e.message}", e)
-            } catch (e: Exception) {
-                logger.error("Erro inesperado ao processar token: error={}", e.message)
-                throw JwtTokenException("Erro ao processar token: ${e.message}", e)
-            }
+            val cleanToken = removeTokenPrefix(accessToken)
+            val claims = parseUnsecuredToken(cleanToken)
+            
+            extractClaimValue(claims, "sessionId")
+                .also { sessionId ->
+                    logger.debug("SessionId extraído do token: sessionId={}", sessionId)
+                }
         }.subscribeOn(Schedulers.boundedElastic())
     }
 
-
-    /**
-     * Valida AccessToken usando o sessionSecret específico da sessão
-     * Esta é a validação final de segurança do token
-     */
     fun validateToken(accessToken: String, sessionSecret: String): Mono<Boolean> {
         return Mono.fromCallable {
-            try {
-                val token = accessToken.removePrefix("Bearer ").trim()
-                
-                // Validação com sessionSecret específico
-                Jwts.parser()
-                    .verifyWith(javax.crypto.spec.SecretKeySpec(sessionSecret.toByteArray(), "HmacSHA256"))
-                    .build()
-                    .parseSignedClaims(token)
-                
-                logger.debug("Token validado com sucesso")
-                true
-                
-            } catch (e: JwtException) {
-                logger.warn("Token inválido: error={}", e.message)
-                false
-            } catch (e: Exception) {
-                logger.error("Erro inesperado na validação do token: error={}", e.message)
-                false
-            }
+            validateTokenSignature(accessToken, sessionSecret)
         }.subscribeOn(Schedulers.boundedElastic())
     }
 
-    /**
-     * Extrai todas as claims do token JWT
-     * Útil para debugging e logs detalhados
-     */
-    fun extractClaims(accessToken: String): Mono<Claims> {
-        return Mono.fromCallable {
-            try {
-                val token = accessToken.removePrefix("Bearer ").trim()
-                
-                Jwts.parser()
-                    .build()
-                    .parseUnsecuredClaims(token)
-                    .payload
-                    
-            } catch (e: JwtException) {
-                throw JwtTokenException("Erro ao extrair claims do token: ${e.message}", e)
-            }
-        }.subscribeOn(Schedulers.boundedElastic())
+    private fun removeTokenPrefix(accessToken: String): String {
+        return accessToken.removePrefix("Bearer ").trim()
     }
 
-    /**
-     * Verifica se o token está expirado
-     */
-    fun isTokenExpired(accessToken: String): Mono<Boolean> {
-        return extractClaims(accessToken)
-            .map { claims ->
-                val expiration = claims.expiration
-                expiration?.before(java.util.Date()) ?: false
-            }
-            .onErrorReturn(true) // Se não conseguir extrair claims, considera expirado
+    private fun parseUnsecuredToken(token: String): Claims {
+        return try {
+            Jwts.parser()
+                .build()
+                .parseUnsecuredClaims(token)
+                .payload
+        } catch (e: JwtException) {
+            logger.warn("Erro ao extrair claims do token: error={}", e.message)
+            throw JwtTokenException("Token JWT inválido: ${e.message}", e)
+        } catch (e: Exception) {
+            logger.error("Erro inesperado ao processar token: error={}", e.message)
+            throw JwtTokenException("Erro ao processar token: ${e.message}", e)
+        }
+    }
+
+    private fun extractClaimValue(claims: Claims, claimName: String): String {
+        return claims.get(claimName, String::class.java)
+            ?: throw JwtTokenException("$claimName não encontrado no token")
+    }
+
+    private fun validateTokenSignature(accessToken: String, sessionSecret: String): Boolean {
+        return try {
+            val cleanToken = removeTokenPrefix(accessToken)
+            val key = Keys.hmacShaKeyFor(sessionSecret.toByteArray())
+
+            Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(cleanToken)
+
+            logger.debug("Token validado com sucesso")
+            true
+
+        } catch (e: JwtException) {
+            logger.warn("Token inválido: error={}", e.message)
+            false
+        } catch (e: Exception) {
+            logger.error("Erro inesperado na validação do token: error={}", e.message)
+            false
+        }
     }
 }
-
-/**
- * Exceção específica para erros de JWT
- */
-class JwtTokenException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)
