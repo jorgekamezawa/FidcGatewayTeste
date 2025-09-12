@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory
+import org.springframework.data.redis.connection.RedisClusterConfiguration
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory
@@ -28,12 +29,15 @@ class RedisConfig(
     @Bean
     @Primary
     fun reactiveRedisConnectionFactory(): ReactiveRedisConnectionFactory {
-        val redisConfig = RedisStandaloneConfiguration().apply {
-            hostName = redisProperties.host
-            port = redisProperties.port
+        val redisConfig = RedisClusterConfiguration().apply {
+            clusterNode(redisProperties.host, redisProperties.port)
+        }
+        
+        redisConfig.apply {
             if (!redisProperties.password.isNullOrBlank()) {
                 setPassword(redisProperties.password)
             }
+            maxRedirects = 3
         }
 
         val socketOptions = SocketOptions.builder()
