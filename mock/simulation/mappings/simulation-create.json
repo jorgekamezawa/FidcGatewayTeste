@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "urlPath": "/api/simulation/create"
+  },
+  "response": {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"message\":\"Simulation created successfully\",\"simulationId\":\"SIM-{{randomValue type='UUID'}}\",\"timestamp\":\"{{now}}\",\"userInfo\":{\"userDocumentNumber\":\"{{request.headers.userDocumentNumber}}\",\"userEmail\":\"{{request.headers.userEmail}}\",\"userName\":\"{{request.headers.userName}}\",\"permissions\":\"{{request.headers.userPermissions}}\"}}"
+  }
+}

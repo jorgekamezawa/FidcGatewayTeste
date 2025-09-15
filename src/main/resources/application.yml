@@ -13,14 +13,25 @@ spring:
           predicates:
             - Path=/actuator/health
             
-        - id: simulation-service
+        - id: simulation-create
           uri: http://localhost:8081
           predicates:
-            - Path=/api/simulation/**
+            - Path=/api/simulation/create/**
           filters:
             - name: SessionValidationFilter
               args:
-                requiredPermissions: []
+                requiredPermissions: 
+                  - CREATE_SIMULATION
+                  
+        - id: simulation-view
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/simulation/view/**
+          filters:
+            - name: SessionValidationFilter
+              args:
+                requiredPermissions: 
+                  - VIEW_PROFILE
 
 server:
   port: 8080

@@ -39,9 +39,6 @@ class SessionValidationFilter(
                 .flatMap { sessionContext ->
                     processValidatedSession(exchange, sessionContext, chain)
                 }
-                .onErrorResume { error ->
-                    handleValidationError(exchange, error)
-                }
         }
     }
 
@@ -202,33 +199,6 @@ class SessionValidationFilter(
         }
     }
 
-    private fun handleValidationError(exchange: ServerWebExchange, error: Throwable): Mono<Void> {
-        val response = exchange.response
-        val request = exchange.request
-        val routeId = getRouteId(exchange)
-        
-        when (error) {
-            is SessionValidationException -> {
-                logger.warn("Falha na validação de sessão: route={}, path={}, error={}", 
-                           routeId, request.path.value(), error.message)
-                response.statusCode = HttpStatus.UNAUTHORIZED
-            }
-            
-            is InsufficientPermissionsException -> {
-                logger.warn("Acesso negado por permissões: route={}, path={}, required={}, user={}", 
-                           routeId, request.path.value(), error.requiredPermissions, error.userPermissions)
-                response.statusCode = HttpStatus.FORBIDDEN
-            }
-            
-            else -> {
-                logger.error("Erro inesperado na validação de sessão: route={}, path={}, error={}", 
-                            routeId, request.path.value(), error.message, error)
-                response.statusCode = HttpStatus.INTERNAL_SERVER_ERROR
-            }
-        }
-        
-        return response.setComplete()
-    }
 
     private fun getRouteId(exchange: ServerWebExchange): String {
         val route = exchange.getAttribute<Route>(ServerWebExchangeUtils.GATEWAY_ROUTE_ATTR)

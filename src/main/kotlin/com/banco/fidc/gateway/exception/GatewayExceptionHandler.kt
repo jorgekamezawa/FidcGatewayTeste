@@ -26,6 +26,7 @@ class GatewayExceptionHandler : ErrorWebExceptionHandler {
 
         return when (ex) {
             is SessionValidationException -> handleSessionValidationException(response, ex, correlationId)
+            is InsufficientPermissionsException -> handleInsufficientPermissionsException(response, ex, correlationId)
             is AuthorizationException -> handleAuthorizationException(response, ex, correlationId)
             is CallNotPermittedException -> handleCircuitBreakerException(response, ex, correlationId)
             is ResponseStatusException -> handleResponseStatusException(response, ex, correlationId)
@@ -40,6 +41,15 @@ class GatewayExceptionHandler : ErrorWebExceptionHandler {
     ): Mono<Void> {
         logger.warn("Session validation failed - correlationId: {} - reason: {}", correlationId, ex.message)
         return writeErrorResponse(response, HttpStatus.UNAUTHORIZED, "INVALID_SESSION", ex.message, correlationId)
+    }
+
+    private fun handleInsufficientPermissionsException(
+        response: ServerHttpResponse,
+        ex: InsufficientPermissionsException,
+        correlationId: String
+    ): Mono<Void> {
+        logger.warn("Insufficient permissions - correlationId: {} - reason: {}", correlationId, ex.message)
+        return writeErrorResponse(response, HttpStatus.FORBIDDEN, "INSUFFICIENT_PERMISSIONS", "Usuário não possui permissões necessárias", correlationId)
     }
 
     private fun handleAuthorizationException(

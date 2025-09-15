@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "GET",
+    "urlPath": "/api/simulation/view"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "body": "{\"message\":\"Viewing simulation data\",\"simulations\":[{\"id\":\"SIM-001\",\"amount\":50000,\"rate\":12.5,\"status\":\"approved\"},{\"id\":\"SIM-002\",\"amount\":75000,\"rate\":11.8,\"status\":\"pending\"}],\"timestamp\":\"{{now}}\",\"userInfo\":{\"userDocumentNumber\":\"{{request.headers.userDocumentNumber}}\",\"userEmail\":\"{{request.headers.userEmail}}\",\"userName\":\"{{request.headers.userName}}\",\"permissions\":\"{{request.headers.userPermissions}}\"}}"
+  }
+}
