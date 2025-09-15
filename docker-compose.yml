@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # Mock servers para APIs downstream (para testes)
   mock-simulation:
     image: wiremock/wiremock:3.3.1
     container_name: fidc-mock-simulation
@@ -9,39 +8,6 @@ services:
       - "8081:8080"
     volumes:
       - ./mock/simulation:/home/wiremock
-    command: --global-response-templating --verbose
-    networks:
-      - fidc-network
-
-  mock-contract:
-    image: wiremock/wiremock:3.3.1
-    container_name: fidc-mock-contract
-    ports:
-      - "8082:8080"
-    volumes:
-      - ./mock/contract:/home/wiremock
-    command: --global-response-templating --verbose
-    networks:
-      - fidc-network
-
-  mock-profile:
-    image: wiremock/wiremock:3.3.1
-    container_name: fidc-mock-profile
-    ports:
-      - "8083:8080"
-    volumes:
-      - ./mock/profile:/home/wiremock
-    command: --global-response-templating --verbose
-    networks:
-      - fidc-network
-
-  mock-query:
-    image: wiremock/wiremock:3.3.1
-    container_name: fidc-mock-query
-    ports:
-      - "8084:8080"
-    volumes:
-      - ./mock/query:/home/wiremock
     command: --global-response-templating --verbose
     networks:
       - fidc-network

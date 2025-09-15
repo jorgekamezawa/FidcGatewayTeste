@@ -102,8 +102,6 @@ spring:
 ### Microserviços Downstream
 APIs de negócio que recebem requests enriquecidas:
 - fidc-simulation (simulações)
-- fidc-contract (contratações)
-- fidc-profile (perfil do usuário)
 - Outros conforme necessidade
 
 ## Padrões de Desenvolvimento

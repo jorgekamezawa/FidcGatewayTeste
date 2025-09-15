@@ -85,9 +85,7 @@ O **FIDC Gateway** é o ponto de entrada centralizado para todas as APIs de neg�
 - **Propósito**: APIs de negócio que recebem requisições enriquecidas
 - **Tipos identificados**:
     - APIs de simulação (fidc-simulation)
-    - APIs de contratação (fidc-contract)
-    - APIs de consulta (fidc-query)
-    - APIs de perfil (fidc-profile)
+    - Outros conforme necessidade
 - **Configuração**: URLs específicas por ambiente via Spring Cloud Gateway routes
 - **Headers injetados**: Contexto completo do usuário (10 headers padrão)
 - **Tratamento de falhas**: Retorno 503 se microserviço indisponível
@@ -161,17 +159,6 @@ spring:
               - CREATE_SIMULATION
               - VIEW_SIMULATION_RESULTS
               
-        - id: contract-service
-          uri: ${CONTRACT_SERVICE_URL:lb://fidc-contract}
-          predicates:
-            - Path=/api/contract/**
-          filters:
-            - name: SessionValidation
-          metadata:
-            timeout: 30s
-            requiredPermissions:
-              - CREATE_CONTRACT
-              - APPROVE_CONTRACT
 ```
 
 ## 🔍 Decisões Arquiteturais

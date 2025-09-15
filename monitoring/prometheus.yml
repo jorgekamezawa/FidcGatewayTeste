@@ -21,7 +21,4 @@ scrape_configs:
     static_configs:
       - targets: 
         - 'mock-simulation:8080'
-        - 'mock-contract:8080'
-        - 'mock-profile:8080'
-        - 'mock-query:8080'
     scrape_interval: 30s

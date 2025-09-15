@@ -15,9 +15,6 @@ docker-compose ps
 - **Redis**: `localhost:6379`
 - **Redis Insight**: `localhost:5540` (interface visual para Redis)
 - **Mock Simulation**: `localhost:8081/__admin/health`
-- **Mock Contract**: `localhost:8082/__admin/health`
-- **Mock Profile**: `localhost:8083/__admin/health`
-- **Mock Query**: `localhost:8084/__admin/health`
 - **Prometheus**: `localhost:9090`
 - **Grafana**: `localhost:3000` (admin/admin123)
 
@@ -64,14 +61,11 @@ curl http://localhost:8080/api/simulation
 
 ## 🧪 Mock Services
 
-Cada mock service (WireMock) simula um microserviço downstream:
+O mock service (WireMock) simula o microserviço downstream:
 - **Simulation**: Simulações de crédito
-- **Contract**: Contratações
-- **Profile**: Perfil do usuário
-- **Query**: Consultas e extratos
 
 ### Adicionar novos mocks
-Criar arquivos JSON em `mock/{service}/mappings/`:
+Criar arquivos JSON em `mock/simulation/mappings/`:
 ```json
 {
   "request": {
