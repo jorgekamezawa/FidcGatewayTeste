@@ -2,6 +2,7 @@ package com.banco.fidc.gateway.filter
 
 import com.banco.fidc.gateway.exception.InsufficientPermissionsException
 import com.banco.fidc.gateway.exception.SessionValidationException
+import com.banco.fidc.gateway.model.AllowedHeaders
 import com.banco.fidc.gateway.model.GatewayHeaders
 import com.banco.fidc.gateway.model.SessionContext
 import com.banco.fidc.gateway.service.JwtService
@@ -176,6 +177,8 @@ class SessionValidationFilter(
         
         val enrichedRequest = exchange.request.mutate()
             .headers { headers ->
+                filterHeadersAllowList(headers)
+                
                 sessionHeaders.forEach { (key, value) ->
                     headers.set(key, value)
                 }
@@ -183,6 +186,20 @@ class SessionValidationFilter(
             .build()
         
         return exchange.mutate().request(enrichedRequest).build()
+    }
+
+    private fun filterHeadersAllowList(headers: org.springframework.http.HttpHeaders) {
+        val headersToRemove = headers.keys.filter { headerName ->
+            !AllowedHeaders.isAllowed(headerName)
+        }
+        
+        headersToRemove.forEach { headerName ->
+            headers.remove(headerName)
+        }
+        
+        if (headersToRemove.isNotEmpty()) {
+            logger.debug("Headers removidos: {}", headersToRemove.joinToString(", "))
+        }
     }
 
     private fun handleValidationError(exchange: ServerWebExchange, error: Throwable): Mono<Void> {
