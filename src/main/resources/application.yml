@@ -1,6 +1,9 @@
 spring:
   application:
     name: fidc-gateway
+
+  profiles:
+    active: local
   
   cloud:
     gateway:
@@ -9,8 +12,46 @@ spring:
           uri: http://localhost:8080
           predicates:
             - Path=/actuator/health
-      # Rotas para APIs serao configuradas aqui quando definidas
-      # Padrao: ${microservices.base-url}/api/service-path
+            
+        # Rota para Simulation Service (Mock)
+        - id: simulation-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/simulation/**
+          filters:
+            - name: SessionValidationFilter
+              args:
+                requiredPermissions: []
+                
+        # Rota para Contract Service (Mock) 
+        - id: contract-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/contract/**
+          filters:
+            - name: SessionValidationFilter
+              args:
+                requiredPermissions: []
+                
+        # Rota para Profile Service (Mock)
+        - id: profile-service  
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/profile/**
+          filters:
+            - name: SessionValidationFilter
+              args:
+                requiredPermissions: []
+                
+        # Rota para Query Service (Mock)
+        - id: query-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/query/**
+          filters:
+            - name: SessionValidationFilter
+              args:
+                requiredPermissions: []
 
 server:
   port: 8080

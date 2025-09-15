@@ -1,36 +1,6 @@
-# Docker Compose para FIDC Gateway development
+version: '3.8'
 
 services:
-  # Redis para sessões
-  redis:
-    image: redis:7.2-alpine
-    container_name: fidc-redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-    networks:
-      - fidc-network
-
-  # Redis Insight para visualização
-  redis-insight:
-    image: redis/redisinsight:latest
-    container_name: fidc-redis-insight
-    ports:
-      - "5540:5540"
-    volumes:
-      - redis_insight_data:/data
-    depends_on:
-      - redis
-    networks:
-      - fidc-network
-
   # Mock servers para APIs downstream (para testes)
   mock-simulation:
     image: wiremock/wiremock:3.3.1
@@ -76,46 +46,9 @@ services:
     networks:
       - fidc-network
 
-  # Prometheus para métricas (configuração padrão)
-  prometheus:
-    image: prom/prometheus:v2.48.0
-    container_name: fidc-prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - prometheus_data:/prometheus
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.enable-lifecycle'
-    networks:
-      - fidc-network
-
-  # Grafana para visualização
-  grafana:
-    image: grafana/grafana:10.2.0
-    container_name: fidc-grafana
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin123
-    volumes:
-      - grafana_data:/var/lib/grafana
-      # - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-      # - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
-    networks:
-      - fidc-network
-
-volumes:
-  redis_data:
-    driver: local
-  redis_insight_data:
-    driver: local
-  prometheus_data:
-    driver: local
-  grafana_data:
-    driver: local
+volumes: {}
 
 networks:
   fidc-network:
-    driver: bridge
+    external: true
+    name: fidc-network

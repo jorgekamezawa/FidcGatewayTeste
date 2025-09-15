@@ -39,16 +39,53 @@ class JwtService {
 
     private fun parseUnsecuredToken(token: String): Claims {
         return try {
-            Jwts.parser()
+            val jwtParts = token.split(".")
+            
+            if (jwtParts.size != 3) {
+                throw JwtTokenException("Token JWT malformado: deve ter 3 partes separadas por ponto")
+            }
+
+            val payloadJson = String(java.util.Base64.getUrlDecoder().decode(jwtParts[1]))
+
+            Jwts.claims()
+                .add(parseJsonToClaims(payloadJson))
                 .build()
-                .parseUnsecuredClaims(token)
-                .payload
-        } catch (e: JwtException) {
-            logger.warn("Erro ao extrair claims do token: error={}", e.message)
-            throw JwtTokenException("Token JWT inválido: ${e.message}", e)
+                
+        } catch (e: JwtTokenException) {
+            throw e
+        } catch (e: IllegalArgumentException) {
+            logger.warn("Erro ao decodificar Base64 do token: error={}", e.message)
+            throw JwtTokenException("Token JWT com encoding inválido: ${e.message}", e)
         } catch (e: Exception) {
             logger.error("Erro inesperado ao processar token: error={}", e.message)
             throw JwtTokenException("Erro ao processar token: ${e.message}", e)
+        }
+    }
+
+    private fun parseJsonToClaims(payloadJson: String): Map<String, Any> {
+        return try {
+            // Parse manual simples do JSON (ou usar Jackson se disponível)
+            val cleanJson = payloadJson.trim()
+            if (!cleanJson.startsWith("{") || !cleanJson.endsWith("}")) {
+                throw JwtTokenException("Payload JWT não é um JSON válido")
+            }
+            
+            // Para simplicidade, usar regex para extrair sessionId
+            // Em produção, seria melhor usar Jackson ObjectMapper
+            val sessionIdRegex = """"sessionId"\s*:\s*"([^"]+)"""".toRegex()
+            val match = sessionIdRegex.find(cleanJson)
+            
+            if (match != null) {
+                mapOf("sessionId" to match.groupValues[1])
+            } else {
+                throw JwtTokenException("sessionId não encontrado no token")
+            }
+            
+        } catch (e: JwtTokenException) {
+            throw e
+        } catch (e: Exception) {
+            logger.error("Erro ao extrair sessionId do payload JSON: error={}", e.message)
+            throw JwtTokenException("Payload JWT inválido: ${e.message}", e)
         }
     }
 

@@ -8,15 +8,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "body": {
-      "message": "Simulation service is working",
-      "timestamp": "{{now}}",
-      "userHeaders": {
-        "userDocumentNumber": "{{request.headers.userDocumentNumber}}",
-        "userEmail": "{{request.headers.userEmail}}",
-        "userName": "{{request.headers.userName}}",
-        "sessionId": "{{request.headers.sessionId}}"
-      }
-    }
+    "body": "{\"message\":\"Simulation service is working\",\"timestamp\":\"{{now}}\",\"userHeaders\":{\"userDocumentNumber\":\"{{request.headers.userDocumentNumber}}\",\"userEmail\":\"{{request.headers.userEmail}}\",\"userName\":\"{{request.headers.userName}}\",\"sessionId\":\"{{request.headers.sessionId}}\"}}"
   }
 }

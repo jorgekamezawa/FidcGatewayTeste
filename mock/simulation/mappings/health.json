@@ -8,16 +8,6 @@
     "headers": {
       "Content-Type": "application/json"
     },
-    "body": {
-      "status": "UP",
-      "components": {
-        "simulation": {
-          "status": "UP",
-          "details": {
-            "service": "fidc-simulation-mock"
-          }
-        }
-      }
-    }
+    "body": "{\"status\":\"UP\",\"components\":{\"simulation\":{\"status\":\"UP\",\"details\":{\"service\":\"fidc-simulation-mock\"}}}}"
   }
 }

@@ -1,22 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\docs/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\.claude\\prompts/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\kotlin\\com\\banco\\fidc\\gateway/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)",
       "Bash(./gradlew:*)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\test\\kotlin\\com\\banco\\fidc\\gateway/**)",
       "Bash(docker-compose up:*)",
       "Bash(docker-compose logs:*)",
       "Bash(docker-compose:*)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\resources/**)",
       "Bash(java:*)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\kotlin\\com\\banco\\fidc\\gateway\\service/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\src\\main\\kotlin\\com\\banco\\fidc\\gateway\\exception/**)",
-      "Read(/G:\\My Drive\\Estudos\\Kotlin\\Projetos\\BTG\\FIDC\\V6\\fidc-gateway\\build\\reports\\tests\\test/**)"
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
